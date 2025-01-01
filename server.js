@@ -13,7 +13,7 @@ const app = express()
 
 app.use(cors(
     {
-        origin: ["http://localhost:3000"],
+        origin: ["https://server-f8g6.onrender.com"],
         methods: ["POST", "GET"],
         credentials: true
     }
@@ -32,10 +32,10 @@ app.use(session({
     }
 }))
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'ms'
+    host: 'bhjmssgtsckntcydrzmy-mysql.services.clever-cloud.com',
+    user: 'ukxtfww4kx9gpssc',
+    password: 'pttLHJgGyANkVsmQDNfv',
+    database: 'bhjmssgtsckntcydrzmy'
 })
 // // const verifyUser = (req, res, next) => {
 // //     const token = req.cookies.token;
