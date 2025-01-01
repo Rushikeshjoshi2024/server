@@ -10,14 +10,12 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express()
-
-app.use(cors(
-    {
-        origin: ["https://server-f8g6.onrender.com"],
-        methods: ["POST", "GET"],
-        credentials: true
-    }
-));
+// {
+//     origin: ["https://server-f8g6.onrender.com"],
+//     methods: ["POST", "GET"],
+//     credentials: true
+// }
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.json());
