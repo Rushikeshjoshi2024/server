@@ -15,13 +15,13 @@ const app = express()
 //     methods: ["POST", "GET"],
 //     credentials: true
 // }
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');  // Allow all domains or specify one
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    next();
-});
-// app.use(cors());
+// app.use((req, res, next) => {
+//     res.header('Access-Control-Allow-Origin', '*');  // Allow all domains or specify one
+//     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+//     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+//     next();
+// });
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.json());
