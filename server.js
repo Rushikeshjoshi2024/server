@@ -23,10 +23,19 @@ const app = express()
 // });
 const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app']; // Replace with your actual React app URL
 const options = {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+            // Allow requests from your React app or from localhost (for testing)
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,  // Allow credentials (cookies, authorization headers, etc.)
 };
+
 app.use(cors(options));
 
 // app.use(cors());
