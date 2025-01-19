@@ -10,22 +10,10 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express()
-// {
-//     origin: ["https://server-f8g6.onrender.com"],
-//     methods: ["POST", "GET"],
-//     credentials: true
-// }
-// app.use((req, res, next) => {
-//     res.header('Access-Control-Allow-Origin', '*');  // Allow all domains or specify one
-//     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-//     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-//     next();
-// });
 const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app']; // Replace with your actual React app URL
 const options = {
     origin: (origin, callback) => {
         if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-            // Allow requests from your React app or from localhost (for testing)
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
@@ -58,27 +46,9 @@ const db = mysql.createConnection({
     password: 'pttLHJgGyANkVsmQDNfv',
     database: 'bhjmssgtsckntcydrzmy'
 })
-// // const verifyUser = (req, res, next) => {
-// //     const token = req.cookies.token;
-// //     if (!token) {
-// //         return res.json({ Error: 'error' });
-// //     }
-// //     else {
-// //         jwt.verify(token, "first-token", (err, decoded) => {
-// //             if (err) {
-// //                 return red.json({ Error: ' token error' });
 
-// //             }
-// //             else {
-// //                 req.email = decoded.email;
-// //                 next();
-// //             }
-// //         })
-// //     }
-// }
 
 app.get('/', (req, res) => {
-    // console.log(req.session);
 
     if (req.session.seller_email) {
         return res.json({ valid: true, user: 'seller', id: req.session.seller_id })
@@ -93,15 +63,7 @@ app.get('/', (req, res) => {
 
 })
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-// Endpoint to fetch image paths
-// app.get('/images', (req, res) => {
-//     const sql = "SELECT shop_image FROM `seller_details` ";
-//     db.query(sql, (err, data) => {
-//         if (err) throw err;
-//         // console.log(data);
-//         res.json(data);
-//     });
-// });
+
 
 
 const storage = multer.diskStorage({
