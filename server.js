@@ -21,7 +21,15 @@ const app = express()
 //     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 //     next();
 // });
-app.use(cors());
+const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app']; // Replace with your actual React app URL
+const options = {
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+};
+app.use(cors(options));
+
+// app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.json());
