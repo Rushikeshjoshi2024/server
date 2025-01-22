@@ -26,6 +26,11 @@ const options = {
 
 app.use(cors(options));
 
+app.use((req, res, next) => {
+    res.setHeader('Content-Security-Policy', "default-src 'self'; connect-src 'self' https://ms1-git-main-rush-js-projects.vercel.app;");
+    next();
+});
+
 // app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
