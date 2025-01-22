@@ -26,10 +26,7 @@ const options = {
 
 app.use(cors(options));
 
-app.use((req, res, next) => {
-    res.setHeader('Content-Security-Policy', "default-src 'self'; connect-src 'self' https://ms1-git-main-rush-js-projects.vercel.app;");
-    next();
-});
+
 
 // app.use(cors());
 app.use(express.json());
@@ -172,6 +169,8 @@ app.post('/seller_details', (req, res) => {
 
 // --------------------------User registration---------------------
 app.post('/all_sellers_home', (req, res) => {
+    res.setHeader('Accept-Ranges', 'bytes');
+
     const sql = "SELECT seller_details.*,COUNT(material_details.seller_id) as count FROM seller_details  left join material_details on (seller_details.seller_id = material_details.seller_id) and seller_details.login_status='Y' group by material_details.seller_id LIMIT ?";
     db.query(sql, [req.body.val], (err, data) => {
         if (err) {
