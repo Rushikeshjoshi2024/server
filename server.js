@@ -7,7 +7,6 @@ const bodyParser = require('body-parser')
 const jwt = require('jsonwebtoken')
 const fs = require('fs');
 const path = require('path');
-const express = require('express');
 const session = require('express-session');
 const connectRedis = require('connect-redis');
 const redis = require('redis');
