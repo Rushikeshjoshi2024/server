@@ -8,11 +8,13 @@ const jwt = require('jsonwebtoken')
 const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
-const RedisStore = require('connect-redis')(session);
+const connectRedis = require('connect-redis');
+const RedisStore = connectRedis(session);  // This is the correct way in recent versions of `connect-redis`
 const redis = require('redis');
-const client = redis.createClient();
 
 const app = express()
+const redisClient = redis.createClient();
+
 const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app']; // Replace with your actual React app URL
 const options = {
     origin: (origin, callback) => {
@@ -37,11 +39,11 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 
 app.use(session({
-    store: new RedisStore({ client }),
+    store: new RedisStore({ client: redisClient }),
     secret: 'secret',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: true } // set to true for HTTPS
+    cookie: { secure: false }
 }));
 
 const db = mysql.createConnection({
