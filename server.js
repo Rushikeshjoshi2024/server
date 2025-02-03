@@ -8,6 +8,10 @@ const bodyParser = require('body-parser')
 const jwt = require('jsonwebtoken')
 const fs = require('fs');
 const path = require('path');
+const session = require('express-session');
+const RedisStore = require('connect-redis')(session);
+const redis = require('redis');
+const client = redis.createClient();
 
 const app = express()
 const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app']; // Replace with your actual React app URL
@@ -34,14 +38,13 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 
 app.use(session({
+    store: new RedisStore({ client }),
     secret: 'secret',
     resave: false,
     saveUninitialized: false,
-    cookie: {
-        secure: false,
-        maxAge: 1000 * 60 * 60 * 24
-    }
-}))
+    cookie: { secure: true } // set to true for HTTPS
+}));
+
 const db = mysql.createConnection({
     host: 'bhjmssgtsckntcydrzmy-mysql.services.clever-cloud.com',
     user: 'ukxtfww4kx9gpssc',
