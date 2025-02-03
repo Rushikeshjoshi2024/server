@@ -7,13 +7,14 @@ const bodyParser = require('body-parser')
 const jwt = require('jsonwebtoken')
 const fs = require('fs');
 const path = require('path');
+const express = require('express');
 const session = require('express-session');
 const connectRedis = require('connect-redis');
-const RedisStore = connectRedis(session);  // This is the correct way in recent versions of `connect-redis`
 const redis = require('redis');
-
 const app = express()
-const redisClient = redis.createClient();
+const redisClient = redis.createClient(); // Connect to Redis (default: localhost:6379)
+
+const RedisStore = connectRedis(session);
 
 const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app']; // Replace with your actual React app URL
 const options = {
