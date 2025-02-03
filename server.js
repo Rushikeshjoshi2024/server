@@ -2,7 +2,6 @@ const express = require('express')
 const multer = require('multer');
 const mysql = require('mysql')
 const cors = require('cors')
-const session = require('express-session')
 const cookieParser = require('cookie-parser')
 const bodyParser = require('body-parser')
 const jwt = require('jsonwebtoken')
