@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
 const app = express()
-import { default as connectRedis } from 'connect-redis';
+const connectRedis = require('connect-redis');
 
 
 
@@ -16,6 +16,7 @@ import { default as connectRedis } from 'connect-redis';
 const redis = require('redis');
 
 const redisClient = redis.createClient();
+await redisClient.connect(); // Use await to explicitly connect
 
 // Handling connection events
 redisClient.on('connect', () => {
