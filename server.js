@@ -10,7 +10,6 @@ const session = require('express-session');
 const app = express()
 
 const RedisStore = require('connect-redis');
-const session = require('express-session');
 const { createClient } = require('redis');
 
 const redisClient = createClient();
