@@ -7,15 +7,20 @@ const bodyParser = require('body-parser')
 const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
-const connectRedis = require('connect-redis');
-const redis = require('redis');
 const app = express()
-const redisClient = redis.createClient();
 
-redisClient.on('error', (err) => {
-    console.error('Redis error: ', err);
+const RedisStore = require('connect-redis');
+const session = require('express-session');
+const { createClient } = require('redis');
+
+const redisClient = createClient();
+redisClient.connected().catch(console.error);
+
+const redisStore = new RedisStore({
+    client: redisClient,
+    prefix: "prefix:",
 });
-const RedisStore = connectRedis(session);
+
 
 
 const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app']; // Replace with your actual React app URL
@@ -42,7 +47,7 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 
 app.use(session({
-    store: new RedisStore({ client: redisClient }),
+    store: redisStore,
     secret: 'secret',
     resave: false,
     saveUninitialized: false,
