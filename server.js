@@ -9,16 +9,22 @@ const path = require('path');
 const session = require('express-session');
 const app = express()
 
-const RedisStore = require('connect-redis');
-const { createClient } = require('redis');
+const connectRedis = require('connect-redis');
+const redis = require('redis');
 
-const redisClient = createClient();
-redisClient.connected().catch(console.error);
+const redisClient = redis.createClient();
 
-const redisStore = new RedisStore({
-    client: redisClient,
-    prefix: "prefix:",
+// Handling connection events
+redisClient.on('connect', () => {
+    console.log('Connected to Redis');
 });
+
+redisClient.on('error', (err) => {
+    console.error('Redis error: ', err);
+});
+
+const RedisStore = connectRedis(session);
+
 
 
 
@@ -46,7 +52,7 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 
 app.use(session({
-    store: redisStore,
+    store: new RedisStore({ client: redisClient }),
     secret: 'secret',
     resave: false,
     saveUninitialized: false,
