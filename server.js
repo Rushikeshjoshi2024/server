@@ -8,8 +8,11 @@ const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
 const app = express()
+import connectRedis from 'connect-redis'
 
-const connectRedis = require('connect-redis');
+
+
+//const connectRedis = require('connect-redis');
 const redis = require('redis');
 
 const redisClient = redis.createClient();
