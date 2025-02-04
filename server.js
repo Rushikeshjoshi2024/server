@@ -10,16 +10,13 @@ const session = require('express-session');
 const connectRedis = require('connect-redis');
 const redis = require('redis');
 const app = express()
-//const redisClient = redis.createClient(); // Connect to Redis (default: localhost:6379)
+const redisClient = redis.createClient();
 
-const redisClient = redis.createClient({
-    host: 'https://server-f8g6.onrender.com', // Optional: if Redis is running on localhost (default)
-    port: 443, // Optional: if Redis is running on default port (6379)
-});
 redisClient.on('error', (err) => {
     console.error('Redis error: ', err);
 });
 const RedisStore = connectRedis(session);
+
 
 const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app']; // Replace with your actual React app URL
 const options = {
