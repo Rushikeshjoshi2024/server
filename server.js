@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
 const app = express()
-import connectRedis from 'connect-redis'
+import { default as connectRedis } from 'connect-redis';
 
 
 
