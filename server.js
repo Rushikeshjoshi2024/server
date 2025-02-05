@@ -34,7 +34,6 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 
 app.use(session({
-    store: new RedisStore({ client: redisClient }),
     secret: 'secret',
     resave: false,
     saveUninitialized: false,
