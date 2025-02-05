@@ -46,6 +46,13 @@ app.use(session({
     },
 }));
 
+
+app.use((req, res, next) => {
+    console.log('Session data:', req.session);  // Log session on every request
+    next();
+});
+
+
 const db = mysql.createConnection({
     host: 'bhjmssgtsckntcydrzmy-mysql.services.clever-cloud.com',
     user: 'ukxtfww4kx9gpssc',
@@ -55,7 +62,7 @@ const db = mysql.createConnection({
 
 
 app.get('/', (req, res) => {
-    console.log(req.session);
+    // console.log(req.session);
     if (req.session.seller_email) {
         return res.json({ valid: true, user: 'seller', id: req.session.seller_id })
     }
