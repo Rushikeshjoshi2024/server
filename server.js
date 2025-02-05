@@ -144,7 +144,7 @@ app.post('/seller_login', (req, res) => {
         if (data.length > 0) {
             req.session.seller_email = data[0].seller_email;
             req.session.seller_id = data[0].seller_id;
-            console.log(req.session);
+            req.session.user = 'seller';
             return res.json({ Login: true, seller_email: req.session.seller_email });
         }
         else {
