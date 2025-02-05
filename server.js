@@ -1,37 +1,15 @@
-import express from 'express';
+const express = require('express')
 const multer = require('multer');
 const mysql = require('mysql')
 const cors = require('cors')
+const session = require('express-session')
 const cookieParser = require('cookie-parser')
 const bodyParser = require('body-parser')
+const jwt = require('jsonwebtoken')
 const fs = require('fs');
 const path = require('path');
-const session = require('express-session');
+
 const app = express()
-const connectRedis = require('connect-redis');
-
-
-
-//const connectRedis = require('connect-redis');
-const redis = require('redis');
-
-const redisClient = redis.createClient();
-await redisClient.connect(); // Use await to explicitly connect
-
-// Handling connection events
-redisClient.on('connect', () => {
-    console.log('Connected to Redis');
-});
-
-redisClient.on('error', (err) => {
-    console.error('Redis error: ', err);
-});
-
-const RedisStore = connectRedis(session);
-
-
-
-
 const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app']; // Replace with your actual React app URL
 const options = {
     origin: (origin, callback) => {
