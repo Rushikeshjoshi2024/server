@@ -39,7 +39,11 @@ app.use(session({
     store: new FileStore({ path: './sessions' }),
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }
+    cookie: {
+        secure: false,
+        httpOnly: true,
+        maxAge: 3600000,
+    },
 }));
 
 const db = mysql.createConnection({
