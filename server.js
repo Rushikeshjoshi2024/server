@@ -6,7 +6,7 @@ const session = require('express-session')
 const cookieParser = require('cookie-parser')
 const bodyParser = require('body-parser')
 const jwt = require('jsonwebtoken')
-const RedisStore = require('connect-redis').default
+const connectRedis = require('connect-redis').default
 import Redis from 'ioredis';
 const fs = require('fs')
 const path = require('path')
