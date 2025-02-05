@@ -8,6 +8,7 @@ const bodyParser = require('body-parser')
 const jwt = require('jsonwebtoken')
 const fs = require('fs');
 const path = require('path');
+const FileStore = require('session-file-store')(session);
 
 const app = express()
 const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app']; // Replace with your actual React app URL
@@ -35,6 +36,7 @@ app.use(bodyParser.json());
 
 app.use(session({
     secret: 'secret',
+    store: new FileStore({ path: './sessions' }),
     resave: false,
     saveUninitialized: false,
     cookie: { secure: false }
