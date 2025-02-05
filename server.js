@@ -55,7 +55,7 @@ const db = mysql.createConnection({
 
 
 app.get('/', (req, res) => {
-    console.log(req.session);
+    // console.log(req.session);
     if (req.session.seller_email) {
         return res.json({ valid: true, user: 'seller', id: req.session.seller_id })
     }
@@ -144,6 +144,7 @@ app.post('/seller_login', (req, res) => {
         if (data.length > 0) {
             req.session.seller_email = data[0].seller_email;
             req.session.seller_id = data[0].seller_id;
+            console.log(req.session);
             return res.json({ Login: true, seller_email: req.session.seller_email });
         }
         else {
