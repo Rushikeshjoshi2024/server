@@ -1,24 +1,15 @@
 const express = require('express')
-const multer = require('multer')
+const multer = require('multer');
 const mysql = require('mysql')
 const cors = require('cors')
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
 const bodyParser = require('body-parser')
 const jwt = require('jsonwebtoken')
-const connectRedis = require('connect-redis').default
-import Redis from 'ioredis';
-const fs = require('fs')
-const path = require('path')
+const fs = require('fs');
+const path = require('path');
 
 const app = express()
-// const redisClient = redis.createClient({
-//     host: 'localhost', // Replace with your Redis host if using a remote service
-//     port: 6379, // Default Redis port
-// });
-const RedisStore = connectRedis(session);
-const redisClient = new Redis();
-
 const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app']; // Replace with your actual React app URL
 const options = {
     origin: (origin, callback) => {
@@ -43,7 +34,6 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 
 app.use(session({
-    store: new RedisStore({ client: redisClient }),
     secret: 'secret',
     resave: false,
     saveUninitialized: false,
