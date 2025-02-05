@@ -40,7 +40,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false,
+        secure: true,
         httpOnly: true,
         maxAge: 3600000,
     },
@@ -48,7 +48,9 @@ app.use(session({
 
 
 app.use((req, res, next) => {
-    console.log('Session data:', req.session);  // Log session on every request
+    req.sessionStore.on('error', (err) => {
+        console.error('Session store error:', err);
+    });
     next();
 });
 
@@ -149,9 +151,8 @@ app.post('/seller_login', (req, res) => {
             return res.json({ success: false, message: "Error occurred, Please try again.", error: err });
         }
         if (data.length > 0) {
-            console.log(data);
-            req.session.seller_email = data[0].seller_email;
-            req.session.seller_id = data[0].seller_id;
+            req.session.seller_email = data.seller_email;
+            req.session.seller_id = data.seller_id;
             req.session.user = 'seller';
             return res.json({ Login: true, seller_email: req.session.seller_email });
         }
