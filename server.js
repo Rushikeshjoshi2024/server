@@ -47,13 +47,6 @@ app.use(session({
 }));
 
 
-app.use((req, res, next) => {
-    req.sessionStore.on('error', (err) => {
-        console.error('Session store error:', err);
-    });
-    next();
-});
-
 
 const db = mysql.createConnection({
     host: 'bhjmssgtsckntcydrzmy-mysql.services.clever-cloud.com',
@@ -151,6 +144,7 @@ app.post('/seller_login', (req, res) => {
             return res.json({ success: false, message: "Error occurred, Please try again.", error: err });
         }
         if (data.length > 0) {
+            console.log(data.seller_email);
             req.session.seller_email = data.seller_email;
             req.session.seller_id = data.seller_id;
             req.session.user = 'seller';
