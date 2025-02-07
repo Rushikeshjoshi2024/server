@@ -57,7 +57,6 @@ const db = mysql.createConnection({
 
 
 app.get('/', (req, res) => {
-    req.session.user = { name: 'John Doe', role: 'admin' };
 
     console.log(req.session);
     if (req.session.seller_email) {
@@ -146,9 +145,10 @@ app.post('/seller_login', (req, res) => {
             return res.json({ success: false, message: "Error occurred, Please try again.", error: err });
         }
         if (data.length > 0) {
+            req.session.user = { email: data[0].seller_email, id: data[0].seller_id };
+
             req.session.seller_email = data[0].seller_email;
             req.session.seller_id = data[0].seller_id;
-            req.session.user = 'seller';
             return res.json({ Login: true, seller_email: req.session.seller_email });
         }
         else {
