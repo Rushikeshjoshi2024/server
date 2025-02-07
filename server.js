@@ -57,8 +57,6 @@ const db = mysql.createConnection({
 
 
 app.get('/', (req, res) => {
-
-    console.log(req.session);
     if (req.session.seller_email) {
         return res.json({ valid: true, user: 'seller', id: req.session.seller_id })
     }
@@ -73,6 +71,11 @@ app.get('/', (req, res) => {
 })
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+app.use((err, req, res, next) => {
+    console.log(req);
+    console.error(err);
+    res.status(500).send('Something went wrong!');
+});
 
 
 const storage = multer.diskStorage({
