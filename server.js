@@ -57,6 +57,8 @@ const db = mysql.createConnection({
 
 
 app.get('/', (req, res) => {
+    req.session.user = { name: 'John Doe', role: 'admin' };
+
     console.log(req.session);
     if (req.session.seller_email) {
         return res.json({ valid: true, user: 'seller', id: req.session.seller_id })
