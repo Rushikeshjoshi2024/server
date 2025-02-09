@@ -71,11 +71,7 @@ app.get('/', (req, res) => {
 })
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.use((err, req, res, next) => {
-    console.log(req);
-    console.error(err);
-    res.status(500).send('Something went wrong!');
-});
+
 
 
 const storage = multer.diskStorage({
@@ -292,7 +288,7 @@ app.post('/search', (req, res) => {
     });
 });
 
-app.post('/all_material_by_seller', (req, res) => {
+app.post('/all_material_by_seller_list', (req, res) => {
     const sql = "SELECT * FROM material_details JOIN seller_details ON material_details.seller_id=seller_details.seller_id JOIN material_category ON material_category.category_id=material_details.category_id  WHERE seller_details.seller_id=? ORDER BY material_details.category_id";
     db.query(sql, [req.body.seller_id], (err, data) => {
         if (err) {
