@@ -9,6 +9,7 @@ const jwt = require('jsonwebtoken')
 const fs = require('fs');
 const path = require('path');
 const FileStore = require('session-file-store')(session);
+const { OAuth2Client } = require('google-auth-library');
 
 const app = express()
 const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app']; // Replace with your actual React app URL
@@ -27,7 +28,8 @@ const options = {
 
 app.use(cors(options));
 
-
+const GOOGLE_CLIENT_ID = "952339138614-n4jja1bk5mc9mksahc093ogq33ggp1ac.apps.googleusercontent.com";
+const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 // app.use(cors());
 app.use(express.json());
@@ -87,6 +89,52 @@ const storage = multer.diskStorage({
     }
 })
 const upload = multer({ storage: storage });
+
+
+
+async function verifyGoogleToken(token) {
+    try {
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: GOOGLE_CLIENT_ID,
+        });
+        return { payload: ticket.getPayload() };
+    } catch (error) {
+        return { error: "Invalid user detected. Please try again" };
+    }
+}
+
+// --- Routes ---
+app.post("/api/auth/google", async (req, res) => {
+    const { token } = req.body;
+
+    // Verify the token
+    const verificationResponse = await verifyGoogleToken(token);
+    if (verificationResponse.error) {
+        return res.status(400).json({
+            message: verificationResponse.error,
+        });
+    }
+
+    // If verification is successful, get the user's profile information
+    const user = verificationResponse.payload;
+
+    // Here, you would typically find or create a user in your database
+    // and create a session or your own JWT for subsequent requests.
+    // For this example, we'll just send back the user info.
+
+    console.log("Verified User:", user);
+
+    res.status(200).json({
+        message: "Login was successful",
+        user: {
+            fullName: user.name,
+            email: user.email,
+            picture: user.picture,
+        },
+    });
+});
+
 
 // --------------------------Seller registration---------------------
 app.post('/seller_reg', (req, res) => {
