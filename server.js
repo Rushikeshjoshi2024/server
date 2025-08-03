@@ -92,6 +92,8 @@ const upload = multer({ storage: storage });
 
 
 
+
+// --- Function to Verify Google Token ---
 async function verifyGoogleToken(token) {
     try {
         const ticket = await client.verifyIdToken({
@@ -105,33 +107,58 @@ async function verifyGoogleToken(token) {
 }
 
 // --- Routes ---
-app.post('/google', async (req, res) => {
+app.post("/api/auth/google", async (req, res) => {
     const { token } = req.body;
-
-    // Verify the token
     const verificationResponse = await verifyGoogleToken(token);
+
     if (verificationResponse.error) {
-        return res.status(400).json({
-            message: verificationResponse.error,
-        });
+        return res.status(400).json({ message: verificationResponse.error });
     }
 
-    // If verification is successful, get the user's profile information
-    const user = verificationResponse.payload;
+    const userProfile = verificationResponse.payload;
 
-    // Here, you would typically find or create a user in your database
-    // and create a session or your own JWT for subsequent requests.
-    // For this example, we'll just send back the user info.
+    // Find or create user in our "database"
+    let user = users[userProfile.sub];
+    if (!user) {
+        user = {
+            id: userProfile.sub,
+            email: userProfile.email,
+            fullName: userProfile.name,
+            picture: userProfile.picture,
+        };
+        users[userProfile.sub] = user;
+    }
 
-    console.log("Verified User:", user);
+    console.log("User:", user);
+
+    // --- Create our own JWT ---
+    const appToken = jwt.sign(
+        { userId: user.id },
+        process.env.JWT_SECRET,
+        { expiresIn: '1d' } // Token expires in 1 day
+    );
 
     res.status(200).json({
         message: "Login was successful",
-        user: {
-            fullName: user.name,
-            email: user.email,
-            picture: user.picture,
-        },
+        user,
+        token: appToken, // Send our app's token to the client
+    });
+});
+
+// New route to verify our own app token and get user data
+app.get("/api/auth/me", (req, res) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    if (token == null) return res.sendStatus(401);
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) return res.sendStatus(403);
+
+        const user = users[decoded.userId];
+        if (!user) return res.sendStatus(404);
+
+        res.json({ user });
     });
 });
 
