@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const FileStore = require('session-file-store')(session);
 const { OAuth2Client } = require('google-auth-library');
+const users = {};
 
 const app = express()
 const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app']; // Replace with your actual React app URL
