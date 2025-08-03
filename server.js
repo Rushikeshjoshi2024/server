@@ -108,7 +108,7 @@ async function verifyGoogleToken(token) {
 }
 
 // --- Routes ---
-app.post("/api/auth/google", async (req, res) => {
+app.post("/google", async (req, res) => {
     const { token } = req.body;
     const verificationResponse = await verifyGoogleToken(token);
 
@@ -147,7 +147,7 @@ app.post("/api/auth/google", async (req, res) => {
 });
 
 // New route to verify our own app token and get user data
-app.get("/api/auth/me", (req, res) => {
+app.get("/me", (req, res) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
