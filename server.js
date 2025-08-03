@@ -135,7 +135,7 @@ app.post("/google", async (req, res) => {
     // --- Create our own JWT ---
     const appToken = jwt.sign(
         { userId: user.id },
-        process.env.JWT_SECRET,
+        'ThisIsMySuperSecretKeyForMyWebApp-AndItShouldBeVeryLongAndRandom123!@#',
         { expiresIn: '1d' } // Token expires in 1 day
     );
 
@@ -153,7 +153,7 @@ app.get("/me", (req, res) => {
 
     if (token == null) return res.sendStatus(401);
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    jwt.verify(token, 'ThisIsMySuperSecretKeyForMyWebApp-AndItShouldBeVeryLongAndRandom123!@#', (err, decoded) => {
         if (err) return res.sendStatus(403);
 
         const user = users[decoded.userId];
