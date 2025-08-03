@@ -13,7 +13,7 @@ const { OAuth2Client } = require('google-auth-library');
 const users = {};
 
 const app = express()
-const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app/']; // Replace with your actual React app URL
+const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app']; // Replace with your actual React app URL
 const options = {
     origin: (origin, callback) => {
         if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
