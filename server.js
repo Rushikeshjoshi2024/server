@@ -105,7 +105,7 @@ async function verifyGoogleToken(token) {
 }
 
 // --- Routes ---
-app.post("/api/auth/google", async (req, res) => {
+app.post("/google", async (req, res) => {
     const { token } = req.body;
 
     // Verify the token
