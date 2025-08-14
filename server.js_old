@@ -1,17 +1,18 @@
-const express = require('express');
+const express = require('express')
 const multer = require('multer');
-const mysql = require('mysql');
-const cors = require('cors');
-const session = require('express-session');
-const cookieParser = require('cookie-parser');
-const bodyParser = require('body-parser');
-// const jwt = require('jsonwebtoken'); // No longer needed for this flow
+const mysql = require('mysql')
+const cors = require('cors')
+const session = require('express-session')
+const cookieParser = require('cookie-parser')
+const bodyParser = require('body-parser')
+const jwt = require('jsonwebtoken')
 const fs = require('fs');
 const path = require('path');
 const FileStore = require('session-file-store')(session);
-const { OAuth2Client } = require('google-auth-library'); // Keep this
+const { OAuth2Client } = require('google-auth-library');
+const users = {};
 
-const app = express();
+const app = express()
 const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app']; // Replace with your actual React app URL
 const options = {
     origin: (origin, callback) => {
@@ -23,15 +24,15 @@ const options = {
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+    credentials: true,  // Allow credentials (cookies, authorization headers, etc.)
 };
 
 app.use(cors(options));
 
-// --- GOOGLE OAUTH CONFIGURATION ---
 const GOOGLE_CLIENT_ID = "952339138614-n4jja1bk5mc9mksahc093ogq33ggp1ac.apps.googleusercontent.com";
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
+// app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.json());
@@ -42,34 +43,40 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false, // Set to true if you are using https in production
+        secure: false,
         httpOnly: true,
-        maxAge: 3600000, // 1 hour
+        maxAge: 3600000,
     },
 }));
+
+
 
 const db = mysql.createConnection({
     host: 'bhjmssgtsckntcydrzmy-mysql.services.clever-cloud.com',
     user: 'ukxtfww4kx9gpssc',
     password: 'pttLHJgGyANkVsmQDNfv',
     database: 'bhjmssgtsckntcydrzmy'
-});
+})
 
-// --- Root route to check session status ---
+
 app.get('/', (req, res) => {
     if (req.session.seller_email) {
-        return res.json({ valid: true, user: 'seller', id: req.session.seller_id });
-    } else if (req.session.user_email) { // Check for user_email (set by both logins)
-        return res.json({ valid: true, user: 'person', user_email: req.session.user_email, user_id: req.session.user_id });
-    } else {
-        return res.json({ valid: false });
+        return res.json({ valid: true, user: 'seller', id: req.session.seller_id })
     }
-});
+    else if (req.session.user_email) {
+        return res.json({ valid: true, user: 'person', user_email: req.session.user_email })
+    }
+    else {
+        return res.json({ valid: false })
 
-// Serve uploaded files statically
+    }
+
+})
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// --- Multer Storage Configuration ---
+
+
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = 'uploads/';
@@ -81,64 +88,79 @@ const storage = multer.diskStorage({
     filename: (req, file, cb) => {
         cb(null, Date.now() + path.extname(file.originalname));
     }
-});
+})
 const upload = multer({ storage: storage });
 
 
-// ====================================================================
-// --- NEW: GOOGLE OAUTH 2.0 LOGIN ROUTE ---
-// ====================================================================
-app.post('/auth/google', async (req, res) => {
-    const { token } = req.body;
+
+
+// --- Function to Verify Google Token ---
+async function verifyGoogleToken(token) {
     try {
         const ticket = await client.verifyIdToken({
             idToken: token,
             audience: GOOGLE_CLIENT_ID,
         });
-        const payload = ticket.getPayload();
-        const { email, name } = payload;
-
-        // Check if user exists in our database
-        const findUserSql = "SELECT * FROM `user` WHERE `user_email` = ?";
-        db.query(findUserSql, [email], (err, users) => {
-            if (err) {
-                console.error("DB Error on find user:", err);
-                return res.status(500).json({ message: "Database error during login." });
-            }
-
-            // --- Case 1: User already exists ---
-            if (users.length > 0) {
-                const user = users[0];
-                // Create a session for the existing user
-                req.session.user_email = user.user_name; // Using user_name for display, consistent with your regular login
-                req.session.user_id = user.user_id;
-                console.log(`Existing user logged in via Google: ${user.user_email}`);
-                return res.json({ Login: true, user_email: req.session.user_email });
-            }
-
-            // --- Case 2: New user, create an account ---
-            else {
-                // For OAuth users, password is not needed. We store NULL.
-                const createUserSql = "INSERT INTO `user` (`user_name`, `user_email`, `user_password`) VALUES (?, ?, NULL)";
-                db.query(createUserSql, [name, email], (err, result) => {
-                    if (err) {
-                        console.error("DB Error on create user:", err);
-                        return res.status(500).json({ message: "Could not create new user." });
-                    }
-
-                    // Create a session for the new user
-                    req.session.user_email = name;
-                    req.session.user_id = result.insertId;
-                    console.log(`New user created and logged in via Google: ${email}`);
-                    return res.json({ Login: true, user_email: req.session.user_email });
-                });
-            }
-        });
-
+        return { payload: ticket.getPayload() };
     } catch (error) {
-        console.error("Google token verification failed:", error);
-        res.status(401).json({ message: "Invalid Google token." });
+        return { error: "Invalid user detected. Please try again" };
     }
+}
+
+// --- Routes ---
+app.post("/google", async (req, res) => {
+    const { token } = req.body;
+    const verificationResponse = await verifyGoogleToken(token);
+
+    if (verificationResponse.error) {
+        return res.status(400).json({ message: verificationResponse.error });
+    }
+
+    const userProfile = verificationResponse.payload;
+
+    // Find or create user in our "database"
+    let user = users[userProfile.sub];
+    if (!user) {
+        user = {
+            id: userProfile.sub,
+            email: userProfile.email,
+            fullName: userProfile.name,
+            picture: userProfile.picture,
+        };
+        users[userProfile.sub] = user;
+    }
+
+    console.log("User:", user);
+
+    // --- Create our own JWT ---
+    const appToken = jwt.sign(
+        { userId: user.id },
+        'ThisIsMySuperSecretKeyForMyWebApp-AndItShouldBeVeryLongAndRandom123!@#',
+        { expiresIn: '1d' } // Token expires in 1 day
+    );
+
+    res.status(200).json({
+        message: "Login was successful",
+        user,
+        token: appToken, // Send our app's token to the client
+    });
+});
+
+// New route to verify our own app token and get user data
+app.get("/me", (req, res) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    if (token == null) return res.sendStatus(401);
+
+    jwt.verify(token, 'ThisIsMySuperSecretKeyForMyWebApp-AndItShouldBeVeryLongAndRandom123!@#', (err, decoded) => {
+        if (err) return res.sendStatus(403);
+
+        const user = users[decoded.userId];
+        if (!user) return res.sendStatus(404);
+
+        res.json({ user });
+    });
 });
 
 
@@ -151,6 +173,7 @@ app.post('/seller_reg', (req, res) => {
         req.body.shop_mo_no,
         req.body.shop_name,
         req.body.shop_password,
+        // req.body.shop_name,
     ]
     db.query(sql, [values], (err, data) => {
         if (err) {
@@ -160,8 +183,6 @@ app.post('/seller_reg', (req, res) => {
     });
 })
 
-// ... (rest of your existing code remains unchanged)
-// --- Make sure to keep all your other routes for seller, materials, user account, etc. ---
 app.post('/update_seller', (req, res) => {
     const sql = "UPDATE `seller_details` SET `seller_address`=?,`seller_mobile_no`=?,`seller_email`=?,`seller_password`=?, `state`=?, `district`=?, `street`=?, `landmark`=?, `pincode`=? WHERE `seller_id`=?";
     db.query(sql, [req.body.seller_address, req.body.seller_mobile_no, req.body.seller_email, req.body.seller_password, req.body.state, req.body.district, req.body.street, req.body.landmark, req.body.pincode, req.session.seller_id], (err, data) => {
@@ -234,7 +255,7 @@ app.post('/seller_details', (req, res) => {
 app.post('/all_sellers_home', (req, res) => {
     res.setHeader('Accept-Ranges', 'bytes');
 
-    const sql = "SELECT seller_details.*,COUNT(material_details.seller_id) as count FROM seller_details  left join material_details on (seller_details.seller_id = material_details.seller_id) and seller_details.login_status='Y' group by material_details.seller_id LIMIT ?";
+    const sql = "SELECT seller_details.*,COUNT(material_details.seller_id) as count FROM seller_details  left join material_details on (seller_details.seller_id = material_details.seller_id) and seller_details.login_status='Y' group by material_details.seller_id LIMIT ?";
     db.query(sql, [req.body.val], (err, data) => {
         if (err) {
             // console.error("Error occurred:", err);
@@ -250,7 +271,7 @@ app.post('/all_sellers_home', (req, res) => {
 
 
 app.get('/all_sellers', (req, res) => {
-    const sql = "SELECT seller_details.*,COUNT(material_details.seller_id) as count FROM seller_details  left join material_details on (seller_details.seller_id = material_details.seller_id) and seller_details.login_status='Y' group by material_details.seller_id";
+    const sql = "SELECT seller_details.*,COUNT(material_details.seller_id) as count FROM seller_details  left join material_details on (seller_details.seller_id = material_details.seller_id) and seller_details.login_status='Y' group by material_details.seller_id";
     db.query(sql, (err, data) => {
         if (err) {
             // console.error("Error occurred:", err);
@@ -295,7 +316,7 @@ app.get('/all_material', (req, res) => {
     });
 });
 app.post('/latest_material_by_seller', (req, res) => {
-    const sql = "SELECT * FROM material_details JOIN seller_details ON material_details.seller_id=seller_details.seller_id JOIN material_category ON material_category.category_id=material_details.category_id  WHERE seller_details.seller_id=? ORDER BY RAND() LIMIT ?"; // Removed backticks from the table name
+    const sql = "SELECT * FROM material_details JOIN seller_details ON material_details.seller_id=seller_details.seller_id JOIN material_category ON material_category.category_id=material_details.category_id  WHERE seller_details.seller_id=? ORDER BY RAND() LIMIT ?"; // Removed backticks from the table name
     // const sql = "SELECT * FROM material_details JOIN seller_details ON material_details.seller_id=seller_details.seller_id JOIN material_category ON material_category.category_id=material_details.category_id ORDER BY RAND() LIMIT ?"; 
     db.query(sql, [req.body.seller_id, req.body.val], (err, data) => {
         if (err) {
@@ -310,7 +331,7 @@ app.post('/latest_material_by_seller', (req, res) => {
     });
 });
 app.post('/all_material_by_seller', (req, res) => {
-    const sql = "SELECT * FROM material_details JOIN seller_details ON material_details.seller_id=seller_details.seller_id JOIN material_category ON material_category.category_id=material_details.category_id  WHERE seller_details.seller_id=? "; // Removed backticks from the table name
+    const sql = "SELECT * FROM material_details JOIN seller_details ON material_details.seller_id=seller_details.seller_id JOIN material_category ON material_category.category_id=material_details.category_id  WHERE seller_details.seller_id=? "; // Removed backticks from the table name
     // const sql = "SELECT * FROM material_details JOIN seller_details ON material_details.seller_id=seller_details.seller_id JOIN material_category ON material_category.category_id=material_details.category_id ORDER BY RAND() LIMIT ?"; 
     db.query(sql, [req.session.seller_id], (err, data) => {
         if (err) {
@@ -344,7 +365,7 @@ app.post('/search', (req, res) => {
 });
 
 app.post('/all_material_by_seller_list', (req, res) => {
-    const sql = "SELECT * FROM material_details JOIN seller_details ON material_details.seller_id=seller_details.seller_id JOIN material_category ON material_category.category_id=material_details.category_id  WHERE seller_details.seller_id=? ORDER BY material_details.category_id";
+    const sql = "SELECT * FROM material_details JOIN seller_details ON material_details.seller_id=seller_details.seller_id JOIN material_category ON material_category.category_id=material_details.category_id  WHERE seller_details.seller_id=? ORDER BY material_details.category_id";
     db.query(sql, [req.body.seller_id], (err, data) => {
         if (err) {
             console.error("Error occurred:", err);
@@ -388,7 +409,7 @@ app.post('/featured_material', (req, res) => {
     });
 });
 app.post('/material_details', (req, res) => {
-    const sql = "SELECT * FROM material_details JOIN seller_details ON material_details.seller_id=seller_details.seller_id  JOIN material_category ON material_category.category_id=material_details.category_id WHERE id=?"; // Removed backticks from the table name
+    const sql = "SELECT * FROM material_details JOIN seller_details ON material_details.seller_id=seller_details.seller_id  JOIN material_category ON material_category.category_id=material_details.category_id WHERE id=?"; // Removed backticks from the table name
     // db.query(sql, (err, data) => {
     db.query(sql, [req.body.mat_id], (err, data) => {
         if (err) {
@@ -523,7 +544,6 @@ app.post('/mat_reg', upload.single('image'), (req, res) => {
     });
 })
 
-
 app.listen(443, () => {
-    console.log("Server connected on port 443...");
-});
+    console.log("Connected...");
+})
