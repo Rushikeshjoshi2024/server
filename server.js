@@ -598,7 +598,7 @@ app.get('/logout', (req, res) => {
 })
 
 app.post('/mat_reg', upload.single('image'), (req, res) => {
-    const sql = "INSERT INTO `material_details`( `material_name`, `category_id`, `material_price`,`material_brand`,`material_color`,`material_image`,`seller_id`,`isExclusive`)VALUES (?)";
+    const sql = "INSERT INTO `material_details`( `material_name`, `category_id`, `material_price`,`selling_price`,`material_brand`,`material_color`,`material_image`,`seller_id`,`isExclusive`)VALUES (?)";
     // const { Material_Name, Material_category, Material_price, Material_brand, Material_color, id } = req.body;
     const imagePath = req.file ? req.file.filename : null;
 
