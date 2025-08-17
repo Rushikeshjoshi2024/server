@@ -235,7 +235,24 @@ app.post('/seller_login', (req, res) => {
         }
     });
 });
-
+// // --------------------------Seller registration---------------------
+app.post('/seller_reg', (req, res) => {
+    const sql = "INSERT INTO `seller_details`(`seller_email`,`owner_name`, `seller_mobile_no`, `shop_name`, `seller_password`) VALUES (?)";
+    const values = [
+        req.body.shop_email,
+        req.body.owner_name,
+        req.body.shop_mo_no,
+        req.body.shop_name,
+        req.body.shop_password,
+        // req.body.shop_name,
+    ]
+    db.query(sql, [values], (err, data) => {
+        if (err) {
+            return res.json({ success: false, message: "Error occurred, Please try again.", error: err });
+        }
+        return res.json({ success: true, message: "Registered successfully.", data: data });
+    });
+})
 // ... (your other routes) ...
 
 
