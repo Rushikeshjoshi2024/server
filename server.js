@@ -190,6 +190,25 @@ app.get('/', (req, res) => {
     }
 });
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
+
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadPath = 'uploads/';
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath);
+        }
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+})
+const upload = multer({ storage: storage });
+
 // ... (the rest of your routes are fine)
 app.post('/seller_login', (req, res) => {
     const sql = "SELECT * FROM `seller_details` WHERE seller_email= ? and seller_password= ?";
