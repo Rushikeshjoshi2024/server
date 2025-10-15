@@ -119,17 +119,17 @@ const path = require('path');
 // const FileStore = require('session-file-store')(session); // REMOVED: Not suitable for Render
 
 const app = express();
-
+//'https://ms1-git-main-rush-js-projects.vercel.app'
 // --- CORS Configuration (Your CORS setup is already good!) ---
-const allowedOrigins = ['https://ms1-git-main-rush-js-projects.vercel.app', 'http://localhost:3000/'];
+const allowedOrigins = ['http://localhost:3000/'];
 const options = {
-    // origin: (origin, callback) => {
-    //     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-    //         callback(null, true);
-    //     } else {
-    //         callback(new Error('Not allowed by CORS'));
-    //     }
-    // },
+    origin: (origin, callback) => {
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
